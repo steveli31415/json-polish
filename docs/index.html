@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>json-polish — JSON Formatter</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a33;
+      --text: #e7ecff;
+      --muted: #aab4e6;
+      --border: #26305c;
+      --accent: #7aa2ff;
+      --danger: #ff6b6b;
+      --ok: #2ed573;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: linear-gradient(180deg, var(--bg), #060916);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0;
+      letter-spacing: 0.2px;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .panel {
+      background: rgba(18, 26, 51, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      resize: vertical;
+      box-sizing: border-box;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      background: #0c1230;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: rgba(122, 162, 255, 0.9);
+      box-shadow: 0 0 0 3px rgba(122, 162, 255, 0.18);
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .controls .spacer { flex: 1; }
+    button {
+      background: #1a2552;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    button.primary {
+      background: rgba(122, 162, 255, 0.22);
+      border-color: rgba(122, 162, 255, 0.55);
+    }
+    button.danger {
+      background: rgba(255, 107, 107, 0.14);
+      border-color: rgba(255, 107, 107, 0.4);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    input[type="number"] {
+      width: 70px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0c1230;
+      color: var(--text);
+      font-family: var(--mono);
+    }
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+    .status.ok { color: var(--ok); }
+    .status.err { color: var(--danger); }
+    .footer {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>json-polish</h1>
+        <div class="sub">Format / minify / validate JSON locally in your browser (no upload).</div>
+      </div>
+      <div class="sub"><a href="https://github.com/steveli31415/json-polish">GitHub</a></div>
+    </header>
+
+    <div class="panel">
+      <div class="controls">
+        <button id="btnFormat" class="primary">Format</button>
+        <button id="btnMinify">Minify</button>
+        <button id="btnCopy">Copy output</button>
+        <button id="btnSwap">Swap</button>
+        <button id="btnClear" class="danger">Clear</button>
+
+        <span class="spacer"></span>
+
+        <label><input id="chkSort" type="checkbox" /> Sort keys</label>
+        <label>Indent <input id="indent" type="number" min="0" max="16" step="1" value="2" /></label>
+      </div>
+
+      <div class="grid">
+        <div>
+          <div class="sub" style="margin: 0 0 6px 2px;">Input</div>
+          <textarea id="input" spellcheck="false" placeholder='Paste JSON here…\n\nExample: {"a":1,"b":[2,3]}'></textarea>
+        </div>
+        <div>
+          <div class="sub" style="margin: 0 0 6px 2px;">Output</div>
+          <textarea id="output" spellcheck="false" placeholder="Formatted JSON will appear here…" readonly></textarea>
+        </div>
+      </div>
+
+      <div id="status" class="status" style="margin-top: 10px;"></div>
+
+      <div class="footer">
+        <div>Tip: This runs entirely client-side. No JSON is sent anywhere.</div>
+        <div><a href="https://github.com/steveli31415/json-polish/issues">Report an issue</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const inputEl = $('input');
+    const outputEl = $('output');
+    const statusEl = $('status');
+    const chkSort = $('chkSort');
+    const indentEl = $('indent');
+
+    function setStatus(msg, kind = 'muted') {
+      statusEl.classList.remove('ok', 'err');
+      if (kind === 'ok') statusEl.classList.add('ok');
+      if (kind === 'err') statusEl.classList.add('err');
+      statusEl.textContent = msg || '';
+    }
+
+    function isObject(v) {
+      return v && typeof v === 'object' && !Array.isArray(v);
+    }
+
+    function sortKeysDeep(v) {
+      if (Array.isArray(v)) return v.map(sortKeysDeep);
+      if (isObject(v)) {
+        const out = {};
+        for (const k of Object.keys(v).sort()) out[k] = sortKeysDeep(v[k]);
+        return out;
+      }
+      return v;
+    }
+
+    function parseJson(text) {
+      try {
+        return { ok: true, value: JSON.parse(text) };
+      } catch (e) {
+        return { ok: false, error: e };
+      }
+    }
+
+    function stringifyJson(value, { indent, minify, sortKeys }) {
+      const normalized = sortKeys ? sortKeysDeep(value) : value;
+      const space = minify ? 0 : indent;
+      return JSON.stringify(normalized, null, space);
+    }
+
+    function run({ minify }) {
+      const raw = inputEl.value;
+      if (!raw || !raw.trim()) {
+        outputEl.value = '';
+        setStatus('Paste some JSON into the input box first.', 'err');
+        return;
+      }
+
+      const indent = Math.max(0, Math.min(16, Number(indentEl.value || 2)));
+      const sortKeys = chkSort.checked;
+
+      const parsed = parseJson(raw);
+      if (!parsed.ok) {
+        outputEl.value = '';
+        setStatus(`Invalid JSON: ${parsed.error.message}`, 'err');
+        return;
+      }
+
+      try {
+        const out = stringifyJson(parsed.value, { indent, minify, sortKeys });
+        outputEl.value = out + '\n';
+        setStatus(minify ? 'Minified OK.' : 'Formatted OK.', 'ok');
+      } catch (e) {
+        outputEl.value = '';
+        setStatus(`Error: ${e.message}`, 'err');
+      }
+    }
+
+    $('btnFormat').addEventListener('click', () => run({ minify: false }));
+    $('btnMinify').addEventListener('click', () => run({ minify: true }));
+
+    $('btnCopy').addEventListener('click', async () => {
+      const text = outputEl.value;
+      if (!text) {
+        setStatus('Nothing to copy yet.', 'err');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus('Copied output to clipboard.', 'ok');
+      } catch {
+        // Fallback
+        outputEl.focus();
+        outputEl.select();
+        document.execCommand('copy');
+        setStatus('Copied output to clipboard.', 'ok');
+      }
+    });
+
+    $('btnSwap').addEventListener('click', () => {
+      const a = inputEl.value;
+      inputEl.value = outputEl.value;
+      outputEl.value = a;
+      setStatus('Swapped input/output.', 'ok');
+    });
+
+    $('btnClear').addEventListener('click', () => {
+      inputEl.value = '';
+      outputEl.value = '';
+      setStatus('');
+    });
+
+    // Small QoL: Ctrl/Cmd+Enter formats.
+    inputEl.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        run({ minify: false });
+      }
+    });
+  </script>
+</body>
+</html>

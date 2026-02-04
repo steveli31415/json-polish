@@ -1,6 +1,12 @@
 # json-polish
 
-A tiny CLI to **pretty-print JSON** (and validate it).
+A tiny JSON formatter you can use as:
+- a **CLI** (pretty-print + validate + optional sort keys)
+- a **free web tool** (GitHub Pages)
+
+## Web tool (free)
+
+https://steveli31415.github.io/json-polish/
 
 ## Install
 
