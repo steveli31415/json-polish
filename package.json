@@ -1,0 +1,30 @@
+{
+  "name": "json-polish",
+  "version": "0.1.0",
+  "description": "A tiny CLI to pretty-print JSON (and validate it).",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "json-polish": "./bin/json-polish.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steveli31415/json-polish.git"
+  },
+  "bugs": {
+    "url": "https://github.com/steveli31415/json-polish/issues"
+  },
+  "homepage": "https://github.com/steveli31415/json-polish#readme",
+  "keywords": [
+    "json",
+    "formatter",
+    "pretty",
+    "cli"
+  ]
+}
